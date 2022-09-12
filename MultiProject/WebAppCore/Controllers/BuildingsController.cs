@@ -59,10 +59,10 @@ namespace WebAppCore.Controllers
 
             List<Building> model = new List<Building>();
 
-            model.Add(new Building { Type = "Residential", Name = "John", Address1 = "1320 Tuckerman Pl NE", City="Washington" });
-            model.Add(new Building { Type = "Residential", Name = "Mellanie", Address1 = "1560 Tuckerman Pl NE", City = "Washington" });
-            model.Add(new Building { Type = "Residential", Name = "Lisa", Address1 = "1660 Tuckerman Pl NE", City = "Washington" });
-            model.Add(new Building { Type = "Residential", Name = "Relly", Address1 = "1780 Tuckerman Pl NE", City = "Washington" });
+            model.Add(new Building { Type = "Residential", Name = "John", Address1 = "1320 Sheridan Pl NE", City="Washington" });
+            model.Add(new Building { Type = "Residential", Name = "Mellanie", Address1 = "1560 Somerset Pl NE", City = "Washington" });
+            model.Add(new Building { Type = "Residential", Name = "Lisa", Address1 = "1660 Rittenhouse Pl NE", City = "Washington" });
+            model.Add(new Building { Type = "Residential", Name = "Relly", Address1 = "1780 Arizona Pl NE", City = "Washington" });
 
             return model;
         }
