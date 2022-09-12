@@ -1,0 +1,248 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        ko.components.register('photo-camera')
+        viewModel: function() {
+            var self = this;
+            const videoElement = document.getElementById('camera-video');
+
+            self.VideoSources = ko.observableArray();
+            self.SelectedVideoSource = ko.observable();
+            self.SelectedVideoSource.subscribe(() => startCamera());
+            self.CameraInitializing = ko.observable(false);
+            self.ShowCamera = ko.observable();
+            self.FitHorizontal = ko.observable();
+
+            //Camera, Preview
+            self.Mode = ko.observable();
+
+            self.OpenCamera = function () {
+                self.ShowCamera(true);
+                self.InitializeCamera();
+                self.Mode('Camera');
+            };
+
+            self.SelectVideoSource = (source) => self.SelectedVideoSource(source);
+
+            self.TakePicture = function () {
+                const canvas = document.createElement('canvas');
+                canvas.width = videoElement.videoWidth;
+                canvas.height = videoElement.videoHeight;
+                canvas.getContext('2d').drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+                var img = canvas.toDateURL('image/png');
+                self.PreviewBase64(img);
+
+                self.Mode('Preview');
+
+            };
+
+            self.UsePicture = function () {
+                var base64 = self.PreviewBase64().substring(22);
+                var returnImage = {
+                    //imgData: self.PreviewBase64(),
+                    filedata: base64
+                };
+                //postbox.publish(base64, 'photo-chosen');
+                self.ShowCamera(false);
+                stopCamera();
+                closePopup("takePictureContent", "ok", returnImage);
+            };
+
+            self.Cancel = function () {
+                self.ShowCamera(false);
+                stopCamera();
+                closePopup("takePictureContent", "cancel");
+            }
+
+            self.Retake = () => self.Mode('Camera');
+
+            function VideoSource(src) {
+                var self = this;
+                self.Label = src.label || 'Camera';
+                self.DeviceId = src.deviceId;
+                return self;
+            }
+
+            function gotDevices(deviceInfo) {
+                var videoInputs = ko.utils.arrayFilter(deviceInfo, (device) => {
+                    return device.kind === 'videoinput';
+                });
+                self.VideoSources([]);
+                videoInputs.forEach((v) => self.VideoSources.push({ Label: v.label || 'Camera', DeviceId: v.deviceId }));
+            }
+
+            function devicesError(error) { console.error(error); }
+
+            self.InitializeCamera = function () {
+                navigator.mediaDevices.enumerateDevices()
+                    .then(gotDevices)
+                    .catch(devicesError)
+                    .then(startCamera);
+            };
+
+            function startCamera() {
+                self.CameraInitializing(true);
+
+                if (window.stream) {
+                    videoElement.srcObject = null;
+                    window.stream.getTracks().forEach((track) => track.stop());
+                }
+
+                const videoSource = self.SelectedVideoSource();
+
+                let constraints = {
+                    audio: false,
+                    video: {
+                        deviceId: videoSource ? { exact: videoSource.DeviceId } : undefined,
+                        width: { min: 640, ideal: 640 },
+                        height: { min: 400, ideal: 400 },
+                        aspectRatio: { ideal: 1.3333333333 }
+                    }
+                };
+
+                navigator.mediaDevices.getUserMedia(constrains)
+                    .then(handleSuccess)
+                    .catch(handleError);
+            }
+
+            function stopCamera() {
+                if (window.stream)
+                    window.stream.getTracks()[0].stop();
+
+                videoElement.srcObject = null;
+            }
+
+            function handleSuccess(stream) {
+                self.CameraInitializing(false);
+                window.stream = stream;
+                videoElement.srcObject = stream;
+            }
+
+            functioin handleError(error){
+                switch (error.name) {
+                    case "ConstraintNotSatisfiedError":
+                        errorMsg('The resolution ' + constraints.video.width.exact + 'x' + constraints.video.width.exact + ' px is not supported by your device.');
+                        break;
+                    case "PermissionDeniedError":
+                        errorMsg('Permissions have not been granted to use your camera.');
+                        break;
+                    case "NotFoundError":
+                        errorMsg('No camera foud. Please ensure your device\'s camera is working correctly.');
+                        break;
+                    default:
+                        errorMsg('getUserMedia error: ' + error.name, error);
+                }
+            }
+
+            function errorMsg(msg, error) {
+                if (typeof msg !== 'undefined') {
+                    self.Cancel();
+                    WaitWindow("Camera error - " + msg, "error", null, "attachmentsImagePopup");
+                }
+            }
+
+            self.OpenCamera();
+
+            //When the video is ready to play, ensure the sizing is correct.
+            videoElement.addEventListener('loadedmetadata', resizeVideo);
+
+            //Ensure the video fits in the window
+            function resizeVideo() {
+                var window_ratio = window.innerWidth / window.innerHeight;
+                var video_ratio = videoElement.videoWidth / videoElement.videoHeight;
+                self.FitHorizontal(video_ratio > window_ratio);
+            }
+        }
+
+        (function () {
+            window.addEventListener('resize', resizeVideoThrottled, false);
+
+            var resizeTimeout;
+            function resizeVideoThrottled() {
+                if (!self.ShowCamera()) return;
+
+                if (!resizeTimeout) {
+                    resizeTimeout = setTimeout(() => {
+                        resizeTimeout = null;
+
+                        resizeVideo();
+                    }, 200);
+
+                }
+            }
+        }());
+
+    },
+        template: { element: 'photo-camera-template' }
+
+});
+
+</script>
+
+<style>
+    #camera-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #000;
+        background-size: cover;
+        z-index: 100000;
+    }
+
+    #camera-video-container{
+        position: fixed;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        width: 100%;
+    }
+
+    #camera-video {
+        position: fixed;
+    }
+
+    #camera-preview {
+        position: fixed;
+        
+    }
+
+    #camera-controls-container {
+        position: fixed;
+        right: 0;
+        background: rgba(0, 0, 0, 0.5);
+        color: #f1f1f1;
+        height: 100%;
+        padding: 20px;
+        /* filter: blur(10px);*/
+    }
+
+    #camera-controls {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+    }
+</style>
+
+<photo-camera></photo-camera>
+
+<template id="photo-camera-template">
+    <div id="camera-container" data-bind"visible: ShowCamera"> 
+        <div id="camera-init-indicator" data-bind="visible">
+
+        </div>
+    </div>
+</template>

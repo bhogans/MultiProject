@@ -1,0 +1,7 @@
+﻿/*.btn {
+    width: 80px;
+}*/
+
+.btn-wide {
+    width: 150px !important;
+}

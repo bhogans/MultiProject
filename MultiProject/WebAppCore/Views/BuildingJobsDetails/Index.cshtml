@@ -1,0 +1,282 @@
+﻿@model WebAppCore.ViewModels.BuildingJobsVM
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<h1>@Html.DisplayFor(model => model.Building.Name) - @Html.DisplayFor(model => model.Building.Address1)</h1>
+<p>
+    <a asp-action="Create" asp-controller="Jobs">Create New Job</a>
+</p>
+<h2>Building Jobs</h2>
+@* Table for showing the list of Records from the database *@
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal" onclick="OpenAddPopup();">Add New Job</button>
+<br />
+<br />
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>
+                Job Id
+            </th>
+            <th>
+                Job Type
+            </th>
+            <th>
+                Start
+            </th>
+            <th>
+                Finish
+            </th>
+            <th>
+                Job Status
+            </th>
+            <th>
+                Building Id
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody class="tbody"></tbody>
+</table>
+@*BootsTrap Model Popup for Adding and Updating the  Job Record *@
+<div class="modal fade" id="AddUpdateModel" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                <h4 class="modal-title" id="AddUpdateModelLabel">Add Job</h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    @* hidden filed for storing Id *@
+                    <input type="hidden" id="hfjobId" />
+                    <div class="form-group">
+                        <label for="txtJobStatus">Job Status</label>
+                        <input type="text" class="form-control" id="txtJobStatus" placeholder=" Job Status" />
+                    </div>
+                    <div class="form-group">
+                        <label for="txtJobType">Type</label>
+                        <input type="text" class="form-control" id="txtJobType" placeholder="Job Type" />
+                    </div>
+                    <div class="form-group">
+                        <label for="txtJobStart">Start</label>
+                        <input type="text" class="form-control" id="txtJobStart" placeholder="Job Start" />
+                    </div>
+                    <div class="form-group">
+                        <label for="txtJobFinish">Finish</label>
+                        <input type="text" class="form-control" id="txtJobFinish" placeholder="Job Finish" />
+                    </div>
+                    <div class="form-group">
+                        <label for="txtJobStatus">Status</label>
+                        <input type="text" class="form-control" id="txtJobStatus" placeholder="Job Status" />
+                    </div>
+                    <div class="form-group">
+                        <label for="txtBuildingId">BuildingId</label>
+                        <input type="text" class="form-control" id="txtBuildingId" placeholder="Building Id" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnAddJob" onclick="return AddJob();">Create Job</button>
+                <button type="button" class="btn btn-primary" id="btnUpdateJob" style="display:none;" onclick="UpdateJob();">Update Job</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+@*<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script src="~/Scripts/bootstrap.min.js"></script>*@
+
+
+<script type="text/javascript">
+    //Load Data in Table when documents is ready
+    $(document).ready(function () {
+        BindJobData(1);
+    });
+    
+    //Bind Data function which is responsible for loading all data from database
+    function BindJobData(BuildingId) {
+        $.ajax({
+            url: "/Job/GetJobListByBuildingId?BuildingId=" + BuildingId, 
+            type: "GET",
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (result) {
+                if (result) {
+                    //itetrate thorugh each record and bind it to td
+                    var html = '';
+                    $.each(result, function (key, item) {
+                        html += '<tr>';
+                        html += '<td>' + item.Id + '</td>';
+                        html += '<td>' + item.JobType + '</td>';
+                        html += '<td>' + item.JobStart + '</td>';
+                        html += '<td>' + item.JobFinish + '</td>';
+                        html += '<td>' + item.JobStatus + '</td>';
+                        html += '<td>' + item.BuildingId + '</td>';
+                        html += '<td><a href="#" onclick="return OpenEditPopup(' + item.Id + ')">Edit</a> | <a href="#" onclick="DeleleJob(' + item.Id + ')">Delete</a></td>';
+                        html += '</tr>';
+                    });
+                    $('.tbody').html(html);
+                }
+
+            },
+            error: function (errormessage) {
+                alert(errormessage.responseText);
+            }
+        });
+    }
+
+    //************Adding Record in the database***********
+
+
+    function OpenAddPopup() {
+        //title text
+        $("#AddUpdateModelLabel").text("Add Job")
+        //clear all input
+        ClearAllInput();
+        //open popup
+        $('#AddUpdateModel').modal('show');
+        //show add Job button and hide update button
+        $('#btnUpdateJob').hide();
+        $('#btnAddJob').show();
+    }
+
+    //Add Data Function
+    function AddJob() {
+        var res = ValidateUserInput();
+        if (res == false) {
+            return false;
+        }
+        var JobObj = {
+            Id: $('#hfjobId').val(),
+            JobStatus: $('#txtJobStatus').val(),
+            JobStart: $('#txtJobStart').val(),
+        };
+        $.ajax({
+            url: "/Job/AddJob",
+            data: JSON.stringify(JobObj),
+            type: "POST",
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (result) {
+                //populate table with new record
+                BindJobData();
+                //claer all input and hide model popup
+                ClearAllInput();
+                $('#AddUpdateModel').modal('hide');
+            },
+            error: function (errormessage) {
+                alert(errormessage.responseText);
+            }
+        });
+    }
+
+
+
+    function OpenEditPopup(JobId) {
+        $("#AddUpdateModelLabel").text("Update Job Detail")
+        ClearAllInput();
+        $.ajax({
+            url: "/Job/GetJobbyID?JobId=" + JobId,
+            typr: "GET",
+            contentType: "application/json;charset=UTF-8",
+            dataType: "json",
+            success: function (result) {
+                debugger;
+                $("#AddUpdateModelLabel").val("Update Job Detail")
+                $('#hfjobId').val(result.Id);
+                $('#txtJobStatus').val(result.JobStatus);
+                $('#txtJobStart').val(result.JobStart);
+
+                $('#AddUpdateModel').modal('show');
+                $('#btnUpdateJob').show();
+                $('#btnAddJob').hide();
+            },
+            error: function (errormessage) {
+                alert(errormessage.responseText);
+            }
+        });
+        return false;
+    }
+
+    //function for updating Job record
+    function UpdateJob() {
+        var res = ValidateUserInput();
+        if (res == false) {
+            return false;
+        }
+        var JobObj = {
+            Id: $('#hfjobId').val(),
+            JobStatus: $('#txtJobStatus').val(),
+            JobStart: $('#txtJobStart').val(),
+        };
+        if (!JobObj.Id || JobObj.Id <= 0) {
+            alert("Invalid Id!");
+            return false;
+        }
+        $.ajax({
+            url: "/Job/UpdateJob",
+            data: JSON.stringify(JobObj),
+            type: "POST",
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (result) {
+                BindJobData();
+                ClearAllInput();
+            },
+            error: function (errormessage) {
+                alert(errormessage.responseText);
+            }
+        });
+    }
+
+
+    //function for deleting employee's record
+    function DeleleJob(ID) {
+        var ans = confirm("Are you sure you want to delete?");
+        if (ans) {
+            $.ajax({
+                url: "/Job/DeleteJob?JobId=" + ID,
+                type: "POST",
+                contentType: "application/json;charset=UTF-8",
+                dataType: "json",
+                success: function (result) {
+                    BindJobData();
+                },
+                error: function (errormessage) {
+                    alert(errormessage.responseText);
+                }
+            });
+        }
+    }
+
+    function ClearAllInput() {
+        $('#AddUpdateModel').modal('hide');
+        $('#hfjobId').val("");
+        $('#txtJobStatus').val("");
+        $('#txtJobStart').val("");
+
+        $('#txtJobStatus').css('border-color', 'lightgrey');
+        $('#txtJobStart').css('border-color', 'lightgrey');
+    }
+    function ValidateUserInput() {
+        var isValid = true;
+        if ($('#txtJobStatus').val().trim() == "") {
+            $('#txtJobStatus').css('border-color', 'Red');
+            isValid = false;
+        }
+        else {
+            $('#txtJobStatus').css('border-color', 'lightgrey');
+        }
+        if ($('#txtJobStart').val().trim() == "") {
+            $('#txtJobStart').css('border-color', 'Red');
+            isValid = false;
+        }
+        else {
+            $('#txtJobStart').css('border-color', 'lightgrey');
+        }
+
+
+        return isValid;
+    }
+</script>

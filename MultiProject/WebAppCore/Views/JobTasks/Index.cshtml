@@ -1,0 +1,83 @@
+﻿@model IEnumerable<CleanUp.Entities.JobTask>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.EmployeeId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CTaskId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateTimeAssigned)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CompletionTime)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Completed)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Notes)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Start)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Finish)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Job)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.EmployeeId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CTaskId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateTimeAssigned)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CompletionTime)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Completed)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Notes)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Start)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Finish)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Job.JobId)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.JobTaskId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.JobTaskId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.JobTaskId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

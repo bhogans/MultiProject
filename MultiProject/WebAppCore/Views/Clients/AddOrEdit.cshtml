@@ -1,0 +1,74 @@
+﻿@model CleanUp.Entities.Client
+
+@{
+    Layout = null;
+}
+
+<div class="col-md-12">
+    <form asp-action="AddOrEdit" asp-route-id="@Model.ClientId" onsubmit="return jQueryAjaxPost(this);">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="ClientId" />
+
+        <div class="form-group">
+            <label asp-for="Email" class="control-label"></label>
+            <div class="input-group">
+                <input asp-for="Email" class="form-control" />
+                <div class="input-group-append">
+                    <span class="input-group-text">example.com</span>
+                </div>
+            </div>
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="FirstName" class="control-label"></label>
+                    <input asp-for="FirstName" class="form-control" />
+                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="LastName" class="control-label"></label>
+                    <input asp-for="LastName" class="form-control" />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="NickName" class="control-label"></label>
+                    <input asp-for="NickName" class="form-control" />
+                    <span asp-validation-for="NickName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="Phone" class="control-label"></label>
+                    <input asp-for="Phone" class="form-control" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="BirthDate" class="control-label" ></label>
+                    <input asp-for="BirthDate" class="form-control" asp-format="{0:yyyy-MM-dd}"/>
+                    <span asp-validation-for="BirthDate" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-6 offset-md-3">
+                <input type="submit" value="Submit" class="btn btn-primary btn-block" />
+            </div>
+        </div>
+    </form>
+</div>
+

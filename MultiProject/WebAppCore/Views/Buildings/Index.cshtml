@@ -1,0 +1,200 @@
+﻿@model IEnumerable<CleanUp.Entities.Building>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<script type="text/javascript">
+    var attachmentInformation = [];
+    var imageInformation = [];
+
+    @*$(document).ready(function () {
+        var sitepath = '@Url.Content("~/")';
+        var Viewbag = @Html.Raw(Json.Serialize(ViewBag.Viewbag));
+        var theme = Viewbag.Theme;
+        var clientId = Viewbag.CurrentClient.Id
+
+        var curEmpId = @ViewBag.empId;
+        var sourceType = '@ViewBag.sourceType';
+        var sourceId = @ViewBag.sourceId;
+        var hadGlobalUserAttachmentPermissions =  @Json.Serialize(ViewBag.UserAttachmentGlobalPermissions);
+        var manualAddAllowed = (@Json.Serialize(ViewBag.allowManualAttachments) == null) ? true : @Json.Serialize(ViewBag.allowManualAttachments); //Allow manual attachments by default
+
+        var allAttachments = cleanDateLoopFunc(@Html.Raw(Json.Serialize(Model)), "AttachmentDate", true);
+        var popupName = "attachmentPopup";
+        var popupClass = "." + popupName;
+        var sWindow = $(popupClass).parent();
+        var extraHeight = 70;
+        var extraParams = @Html.Raw(Json.Serialize(ViewBag.extraParams));
+
+        var gridSource = {};
+
+        var activeAttachments = $.grep(allAttachments, function (x) { return x.Status === "A" });
+        var inactiveAttachments = $.grep(allAttachments, function (x) { return x.Status === "I" });
+
+        var currentSrc = activeAttachments;
+        var viewActiveSrc = true;
+
+        loadGrid();
+        loadEvents();
+
+        resizeWindow($(".attactmentsPopup").parent(), $("bottomofattachpage").postion().top, extraHeight, false);
+
+           ///...
+
+        function loadGrid() {
+            currentSrc = (viewActiveSrc) ? activeAttachments : inactiveAttachments;
+            gridSource = {
+                localdata: currentSrc,
+                datatype: "array",
+                datafields:
+                    [
+                        { name: "Type" },
+                        { name: "Name" },
+                        { name: "Address1" },
+                        { name: "Address2v" },
+                        { name: "City" },
+                        { name: "State" },
+                        { name: "Zipcode" },
+                        { name: "Client" }
+                    ],
+                pagesize: 20
+            };
+
+            var dataAdapter = new $.jqxDataAdapter(gridSource);
+        }
+
+
+    });*@
+
+</script>
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Type)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Address1)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Address2)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.City)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.State)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Zipcode)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Client)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Type)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Address1)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Address2)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.City)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.State)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Zipcode)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Client.ClientId)
+
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.BuildingId">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.BuildingId">Details</a> |
+                    <a asp-action="Index" asp-controller="BuildingJobsDetails" asp-route-id="@item.BuildingId">BjDetails</a> |
+                    <a asp-action="Delete" asp-route-id="@item.BuildingId">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<table id="jqGrid"></table>
+<div id="jqGridPager"></div>
+<script>
+
+    $(document).ready(function () {
+
+        debugger;
+
+        $.ajax({
+
+            type: "POST",
+
+            url: '@Url.Action("GetBuildings", "Buildings")',
+
+            data: "",
+
+            contentType: "application/json; charset=utf-8",
+
+            dataType: "json",
+
+            success: function (data) {
+
+                let output = data.map(i => "<tr><td>" + i.Type + "</td><td>" + i.Name + "</td><td>" + i.Address1 + "</td><td>" + i.City + "</td></tr>");
+
+                $("#output").html(output);
+
+            }
+
+        });
+
+    });
+
+</script>
+
+<div class="text-center">
+
+    <h1 class="display-4">Stock List</h1>
+
+    <table class="table table-bordered">
+
+        <tr class="table-head">
+
+            <th>Type</th>
+
+            <th> Name</th>
+
+            <th> Address1 </th>
+
+            <th> City </th>
+        </tr>
+
+        <tbody id="output">
+
+    </table>
+
+</div>
